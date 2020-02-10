@@ -1,28 +1,23 @@
 import React, { Component } from 'react';
-import Todos from './components/Todos'
+import Todos from './components/Todos';
 import './App.css';
-import Header from './components/Header'
-import AddTodo from './components/AddTodo'
+import Header from './components/Header';
+import AddTodo from './components/AddTodo';
+import About from './components/pages/About';
+
+import { BrowserRouter as Router, Route} from 'react-router-dom';
+import axios from 'axios';
+
 
 class App extends Component {
   state = {
     todos: [
-      {
-        id: 1,
-        title: 'Take out the trash',
-        completed: false
-      },
-      {
-        id: 2,
-        title: 'Do stuff',
-        completed: false
-      },
-      {
-        id: 3,
-        title: 'Do more stuff',
-        completed: false
-      }
-    ]
+          ]
+    }
+
+    componentDidMount() {
+      axios.get('https://jsonplaceholder.typicode.com/todos?_limit=10')
+      .then(res => this.setState({todos:res.data}))
     }
 
   // Toggle Complete
@@ -40,28 +35,54 @@ class App extends Component {
   
   //Delete Todo
 
-delTodo = (id) =>
- {
-   this.setState({ todos: [...this.state.todos.filter(todo => todo.id !== id)]})
+
+delTodo = (id) => {
+  axios
+    .delete(`https://jsonplaceholder.typicode.com/todos/${id}`)
+    .then((res) =>
+      this.setState({
+        todos: [...this.state.todos.filter((todo) => todo.id !== id)]
+      })
+    );
+};
+
+ //Add Todo -- posts to the jsonplacer and gives us a response back. Then it takes res.data gives back a new todo.
+ 
+ addTodo = (title) => {
+  axios.post('https://jsonplaceholder.typicode.com/todos', {
+    title,
+    completed: false
+  })
+  
+    .then(res => this.setState({ todos: 
+    [...this.state.todos, res.data] }));
  }
 
- // im not sure what this does. look up spread operator and filter???
-
+ // im not sure what this does. look up spread operator and filter??? What does ... do??
   render () {
-    console.log(this.state.todos)
+ 
     return (
+      <Router>
       <div className="App">
         <div className="container">
         < Header />
-        < AddTodo />
-        <Todos
+   
+     
+        <Route exact path="/" render= {props => (
+            <React.Fragment>
+                 < AddTodo addTodo = {this.addTodo} />
+                 < Todos
 										todos={this.state.todos}
                     markComplete={this.markComplete} 
-                    delTodo={this.delTodo}
-        />
-        >
+                    delTodo={this.delTodo} />
+              </React.Fragment>
+        )} />
+      
+          <Route path="/about" component={About} />
+
         </div>
       </div>
+      </Router>
     );
   }
 }
